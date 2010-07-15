@@ -1,0 +1,14 @@
+<atlassian-plugin key="${project.groupId}.${project.artifactId}" name="${project.name}" plugins-version="2">
+
+    <plugin-info>
+        <description>${project.description}</description>
+        <version>${project.version}</version>
+        <vendor name="${project.organization.name}" url="${project.organization.url}"/>
+    </plugin-info>
+
+    <web-resource key="remote-link" name="Remote Issue Linking">
+        <resource name="timezone-mangler.js" type="download" location="timezone-mangler.js"/>
+        <context>jira.view.issue</context>
+    </web-resource>
+
+</atlassian-plugin>
