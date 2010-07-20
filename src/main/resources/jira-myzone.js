@@ -41,7 +41,7 @@ if (!this.MyZone) {
 jQuery(document).ready(function() {
     var tz = MyZone.getTZ()
     var i = new Date().getTime()
-    jQuery("dd.date").each(function() {
+    jQuery(".date").each(function() {
         var timeString = this.innerHTML
         var draw = function(contents, trigger, showPopup) {
             // TODO (LGM) remove hardcoded URL
