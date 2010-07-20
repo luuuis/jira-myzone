@@ -23,9 +23,9 @@ public class TZConverter
     private final Logger log = LoggerFactory.getLogger(TZConverter.class);
 
     @POST
-    public String convert(String dateString)
+    public DateTZ convert(DateTZ dateString)
     {
-        log.warn("Received date: {}", dateString);
+        log.debug("Received date: {}", dateString);
         return dateString;
     }
 }
