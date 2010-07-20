@@ -6,8 +6,13 @@
         <vendor name="${project.organization.name}" url="${project.organization.url}"/>
     </plugin-info>
 
-    <web-resource key="remote-link" name="Remote Issue Linking">
-        <resource name="timezone-mangler.js" type="download" location="timezone-mangler.js"/>
+    <rest key="MyZone REST API" path="/myzone" version="1.0">
+        <description>JIRA MyZone REST API</description>
+        <package>com.luuuis.myzone.resource</package>
+    </rest>
+
+    <web-resource key="jira-myzone" name="JIRA MyZone Javascript">
+        <resource name="jira-myzone.js" type="download" location="jira-myzone.js"/>
         <context>jira.view.issue</context>
     </web-resource>
 
