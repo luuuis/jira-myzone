@@ -35,14 +35,29 @@ public class DateTZ
         return offset;
     }
 
+    public void setOffset(Integer offset)
+    {
+        this.offset = offset;
+    }
+
     public String getDst()
     {
         return dst;
     }
 
+    public void setDst(String dst)
+    {
+        this.dst = dst;
+    }
+
     public String getTime()
     {
         return time;
+    }
+
+    public void setTime(String time)
+    {
+        this.time = time;
     }
 
     @Override

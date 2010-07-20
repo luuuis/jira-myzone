@@ -59,7 +59,7 @@ jQuery(document).ready(function() {
             });
         }
 
-        var options = { onHover: true, showDelay: 400, hideDelay: 400, closeOthers: false, width: 300 }
+        var options = { onHover: true, showDelay: 400, hideDelay: 400, closeOthers: false, width: 200 }
         AJS.InlineDialog(jQuery(this), "myzone-" + (i++), draw, options)
     })
 })
