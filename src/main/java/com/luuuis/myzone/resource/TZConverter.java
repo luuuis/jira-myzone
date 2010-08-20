@@ -49,28 +49,28 @@ public class TZConverter
     }
 
     @POST
-    public DateTZ convert(DateTZ dateString)
+    public DateTZ convert(DateTZ convertRequest)
     {
-        log.debug("Received date: {}", dateString);
+        log.debug("Received date: {}", convertRequest);
         try
         {
             DateFormat parser = new SimpleDateFormat(getDateFormatString());
             parser.setTimeZone(TimeZone.getDefault());
 
             // TODO Use 'dst'
-            TimeZone timeZone = TimeZone.getTimeZone(format("GMT%+d", dateString.getOffset()));
+            TimeZone timeZone = TimeZone.getTimeZone(format("GMT%+d", convertRequest.getOffset()));
             DateFormat formatter = new SimpleDateFormat(getDateFormatString());
             formatter.setTimeZone(timeZone);
 
             // do the conversion
-            Date date = parser.parse(dateString.getTime());
+            Date date = parser.parse(convertRequest.getTime());
             String prettyDate = String.format("%s (%s)", formatter.format(date), timeZone.getDisplayName());
 
-            return new DateTZ(dateString.getOffset(), dateString.getDst(), prettyDate);
+            return new DateTZ(convertRequest.getRenderTime(), convertRequest.getOffset(), convertRequest.getDst(), prettyDate);
         }
         catch (ParseException e)
         {
-            log.error("Unable to convert date: {}", dateString);
+            log.error("Unable to convert date: {}", convertRequest);
             throw new WebApplicationException(Response.Status.BAD_REQUEST);
         }
     }

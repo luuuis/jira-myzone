@@ -39,16 +39,18 @@ if (!this.MyZone) {
 }());
 
 jQuery(document).ready(function() {
+    var now = new Date().getTime()
     var tz = MyZone.getTZ()
-    var i = new Date().getTime()
-    jQuery(".date").each(function() {
-        var timeString = this.innerHTML
+    var i = 0
+
+    jQuery(".date").add(".attachment-date").each(function() {
+        var timeString = jQuery.trim(this.innerHTML)
         var draw = function(contents, trigger, showPopup) {
             // TODO (LGM) remove hardcoded URL
             jQuery.ajax({
                 url: 'http://localhost:8090/jira/rest/myzone/1.0/convert',
                 type: 'POST',
-                data: JSON.stringify({ offset: tz.offset, dst: tz.dst, time: timeString }),
+                data: JSON.stringify({ renderTime: now, offset: tz.offset, dst: tz.dst, time: timeString }),
                 dataType: 'json',
                 contentType: "application/json; charset=utf-8",
                 success: function(converted) {
@@ -60,6 +62,6 @@ jQuery(document).ready(function() {
         }
 
         var options = { onHover: true, showDelay: 400, hideDelay: 400, closeOthers: false, width: 200 }
-        AJS.InlineDialog(jQuery(this), "myzone-" + (i++), draw, options)
+        AJS.InlineDialog(jQuery(this), "jira-myzone-" + i++, draw, options)
     })
 })

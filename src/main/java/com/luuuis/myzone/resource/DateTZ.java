@@ -11,6 +11,9 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class DateTZ
 {
     @XmlAttribute
+    private Long renderTime;
+
+    @XmlAttribute
     private Integer offset;
 
     @XmlAttribute
@@ -23,11 +26,22 @@ public class DateTZ
     {
     }
 
-    public DateTZ(Integer offset, String dst, String time)
+    public DateTZ(Long renderTime, Integer offset, String dst, String time)
     {
+        this.renderTime = renderTime;
         this.offset = offset;
         this.dst = dst;
         this.time = time;
+    }
+
+    public Long getRenderTime()
+    {
+        return renderTime;
+    }
+
+    public void setRenderTime(Long renderTime)
+    {
+        this.renderTime = renderTime;
     }
 
     public Integer getOffset()
