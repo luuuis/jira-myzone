@@ -13,7 +13,7 @@
 
     <web-resource key="jira-myzone" name="JIRA MyZone Javascript">
         <resource name="jira-myzone.js" type="download" location="jira-myzone.js"/>
-        <context>jira.view.issue</context>
+        <context>atl.general</context>
     </web-resource>
 
     <view-profile-panel key="myzone-profile-panel"

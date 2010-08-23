@@ -39,6 +39,11 @@ if (!this.MyZone) {
 }());
 
 jQuery(document).ready(function() {
+    var canonicalBaseUrl = (function(){
+        var uri = AJS.parseUri(window.location);
+        return uri.protocol + "://" + uri.authority;
+    })();
+
     var now = new Date().getTime()
     var tz = MyZone.getTZ()
     var i = 0
@@ -64,4 +69,12 @@ jQuery(document).ready(function() {
         var options = { onHover: true, showDelay: 400, hideDelay: 400, closeOthers: false, width: 200 }
         AJS.InlineDialog(jQuery(this), "jira-myzone-" + i++, draw, options)
     })
+
+    // update the prefs whenever the timezone is changed
+    jQuery('#myzone-select-timezone').change(function() {
+        jQuery('#myzone-select-timezone option:selected').each(function() {
+            alert('selection is: ' + jQuery(this).val())
+        })
+    })
+
 })
