@@ -1,4 +1,4 @@
-package com.luuuis.myzone.preference;
+package com.luuuis.myzone.resource;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.PUT;

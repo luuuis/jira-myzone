@@ -53,7 +53,7 @@ jQuery(document).ready(function() {
         var draw = function(contents, trigger, showPopup) {
             // TODO (LGM) remove hardcoded URL
             jQuery.ajax({
-                url: 'http://localhost:8090/jira/rest/myzone/1.0/convert',
+                url: canonicalBaseUrl + contextPath + '/rest/myzone/1.0/convert',
                 type: 'POST',
                 data: JSON.stringify({ renderTime: now, offset: tz.offset, dst: tz.dst, time: timeString }),
                 dataType: 'json',
@@ -73,7 +73,15 @@ jQuery(document).ready(function() {
     // update the prefs whenever the timezone is changed
     jQuery('#myzone-select-timezone').change(function() {
         jQuery('#myzone-select-timezone option:selected').each(function() {
-            alert('selection is: ' + jQuery(this).val())
+            var tz = jQuery(this).val()
+            jQuery.ajax({
+                url: canonicalBaseUrl + contextPath + '/rest/myzone/1.0/prefs',
+                type: 'PUT',
+                data: JSON.stringify(tz),
+                contentType: "application/json; charset=utf-8",
+                success: function() { alert('Selected timezone: ' + tz) },
+                error: function() { alert('Error setting timezone') }
+            })
         })
     })
 
