@@ -8,16 +8,18 @@ import com.atlassian.jira.util.I18nHelper;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import com.opensymphony.user.User;
 import org.apache.commons.lang.StringEscapeUtils;
+import org.joda.time.DateTimeZone;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
+import java.util.List;
+import java.util.Locale;
 import java.util.Map;
-import java.util.TimeZone;
+import java.util.Set;
 
 /**
  * TODO: Document this class / interface here
@@ -88,9 +90,11 @@ public class MyZonePreferencePanel implements ViewProfilePanel, OptionalUserProf
      */
     public String getHtml(User profileUser)
     {
+        Locale locale = authContext.getLocale();
         User callingUser = authContext.getUser();
 
         Map<String, Object> params = Maps.newHashMap();
+        params.put("locale", locale);
         params.put("callingUser", callingUser);
         params.put("profileUser", profileUser);
         params.put("stringEscapeUtils", new StringEscapeUtils());
@@ -105,28 +109,25 @@ public class MyZonePreferencePanel implements ViewProfilePanel, OptionalUserProf
      */
     static class TimeZones
     {
-        static final ImmutableList<TimeZone> ALL;
+        static final ImmutableList<TimeZoneInfo> ALL;
         static
         {
-            ArrayList<TimeZone> timeZones = Lists.newArrayList();
-            for (String tzID : TimeZone.getAvailableIDs())
+            // eliminate duplicate timezones
+            Set<DateTimeZone> uniqueTimeZones = Sets.newHashSet();
+            for (Object tzID : DateTimeZone.getAvailableIDs())
             {
-                timeZones.add(TimeZone.getTimeZone(tzID));
+                uniqueTimeZones.add(DateTimeZone.forID((String) tzID));
             }
 
-            Collections.sort(timeZones, new RawOffsetComparator());
-            ALL = ImmutableList.copyOf(timeZones);
-        }
-    }
+            // sort before setting value
+            List<TimeZoneInfo> timeZoneInfos = Lists.newArrayList();
+            for (DateTimeZone timeZone : uniqueTimeZones)
+            {
+                timeZoneInfos.add(TimeZoneInfo.from(timeZone));
+            }
+            Collections.sort(timeZoneInfos);
 
-    /**
-     * Compares TimeZone instances using their "raw" offset (from UTC).
-     */
-    private static class RawOffsetComparator implements Comparator<TimeZone>
-    {
-        public int compare(TimeZone tz1, TimeZone tz2)
-        {
-            return tz1.getRawOffset() - tz2.getRawOffset();
+            ALL = ImmutableList.copyOf(timeZoneInfos);
         }
     }
 }

@@ -1,3 +1,13 @@
 <div class="module isolated">
-    <span>Hello, $stringEscapeUtils.escapeHtml(${profileUser.fullName})!</span>
+    <div>
+    <label for="myzone-select-timezone">$i18n.getText("myzone.user.timezone")</label>
+    </div>
+    <div>
+    <select class="select" id="myzone-select-timezone" name="myzone-select-timezone">
+        <option value="" selected="true">$i18n.getText("myzone.default.timezone")</option>
+        #foreach ($timezone in $timezones)
+        <option value="$timezone.idHtml">$timezone.getDisplayNameHtml()</option>
+        #end
+    </select>
+    </div>
 </div>
