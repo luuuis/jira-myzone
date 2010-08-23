@@ -9,5 +9,6 @@
         <option value="$timezone.idHtml" #if ($selectedTZ == $timezone.id) selected="true" #end>$timezone.getDisplayNameHtml()</option>
         #end
     </select>
+    <script type="text/javascript">MyZone.registerChangeListener('myzone-select-timezone')</script>
     </div>
 </div>
