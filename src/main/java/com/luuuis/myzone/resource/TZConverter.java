@@ -2,6 +2,8 @@ package com.luuuis.myzone.resource;
 
 import com.atlassian.jira.config.properties.APKeys;
 import com.atlassian.jira.config.properties.ApplicationProperties;
+import com.atlassian.jira.security.JiraAuthenticationContext;
+import com.opensymphony.user.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,8 +20,6 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import static java.lang.String.format;
-
 /**
  * This service converts dates and times between different time zones.
  */
@@ -34,6 +34,11 @@ public class TZConverter
     private final Logger log = LoggerFactory.getLogger(TZConverter.class);
 
     /**
+     * A JiraAuthenticationContext.
+     */
+    private final JiraAuthenticationContext authContext;
+
+    /**
      * The JIRA application properties.
      */
     private final ApplicationProperties applicationProperties;
@@ -42,41 +47,53 @@ public class TZConverter
      * Creates a new TZConverter.
      *
      * @param applicationProperties an ApplicationProperties
+     * @param authContext a JiraAuthenticationContext
      */
-    public TZConverter(ApplicationProperties applicationProperties)
+    public TZConverter(ApplicationProperties applicationProperties, JiraAuthenticationContext authContext)
     {
         this.applicationProperties = applicationProperties;
+        this.authContext = authContext;
     }
 
     @POST
-    public DateTZ convert(DateTZ convertRequest)
+    public DateTZ convert(DateTZ request)
     {
-        log.debug("Received date: {}", convertRequest);
+        log.debug("Received date: {}", request);
         try
         {
             DateFormat parser = new SimpleDateFormat(getDateFormatString());
             parser.setTimeZone(TimeZone.getDefault());
 
-            Integer offset = convertRequest.getOffset();
-            if (Boolean.valueOf(convertRequest.getDst()))
+            User user = authContext.getUser();
+            if (user == null)
             {
-                // adjust for DST
-                offset = offset+1;
+                throw new WebApplicationException(401);
             }
-            
-            TimeZone timeZone = TimeZone.getTimeZone(format("GMT%+d", offset));
-            DateFormat formatter = new SimpleDateFormat(getDateFormatString());
-            formatter.setTimeZone(timeZone);
+
+            String selectedTZ = user.getPropertySet().getString(Prefs.SELECTED_TZ);
+            if (selectedTZ == null)
+            {
+                // TODO: no TZ selected, return a link or something...
+                return request;
+            }
+
+            SimpleDateFormat jiraDateFormat = new SimpleDateFormat(getDateFormatString());
+            jiraDateFormat.setTimeZone(TimeZone.getDefault());
+
+            TimeZone userTZ = TimeZone.getTimeZone(selectedTZ);
+            SimpleDateFormat userDateFormat = new SimpleDateFormat(getDateFormatString());
+            userDateFormat.setTimeZone(userTZ);
 
             // do the conversion
-            Date date = parser.parse(convertRequest.getTime());
-            String prettyDate = String.format("%s (%s)", formatter.format(date), timeZone.getDisplayName());
+            Date dateInJiraTZ = jiraDateFormat.parse(request.getTime());
+            String dateInUserTZ = userDateFormat.format(dateInJiraTZ);
 
-            return new DateTZ(convertRequest.getRenderTime(), convertRequest.getOffset(), convertRequest.getDst(), prettyDate);
+            // return a date string w/ TZ info
+            return new DateTZ(String.format("%s %s", dateInUserTZ, userTZ.getDisplayName(true, TimeZone.SHORT)));
         }
         catch (ParseException e)
         {
-            log.error("Unable to convert date: {}", convertRequest);
+            log.error("Unable to convert date: {}", request);
             throw new WebApplicationException(Response.Status.BAD_REQUEST);
         }
     }

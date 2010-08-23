@@ -79,7 +79,7 @@ jQuery(document).ready(function() {
             jQuery.ajax({
                 url: canonicalBaseUrl + contextPath + '/rest/myzone/1.0/convert',
                 type: 'POST',
-                data: JSON.stringify({ renderTime: now, offset: tz.offset, dst: tz.dst, time: timeString }),
+                data: JSON.stringify({ time: timeString }),
                 dataType: 'json',
                 contentType: "application/json; charset=utf-8",
                 success: function(converted) {
