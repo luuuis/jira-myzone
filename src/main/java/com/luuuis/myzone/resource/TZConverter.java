@@ -57,8 +57,14 @@ public class TZConverter
             DateFormat parser = new SimpleDateFormat(getDateFormatString());
             parser.setTimeZone(TimeZone.getDefault());
 
-            // TODO Use 'dst'
-            TimeZone timeZone = TimeZone.getTimeZone(format("GMT%+d", convertRequest.getOffset()));
+            Integer offset = convertRequest.getOffset();
+            if (Boolean.valueOf(convertRequest.getDst()))
+            {
+                // adjust for DST
+                offset = offset+1;
+            }
+            
+            TimeZone timeZone = TimeZone.getTimeZone(format("GMT%+d", offset));
             DateFormat formatter = new SimpleDateFormat(getDateFormatString());
             formatter.setTimeZone(timeZone);
 
