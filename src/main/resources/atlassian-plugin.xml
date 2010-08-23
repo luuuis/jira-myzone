@@ -16,4 +16,14 @@
         <context>jira.view.issue</context>
     </web-resource>
 
+    <view-profile-panel key="myzone-profile-panel"
+                        i18n-name-key="myzone.preferences.name"
+                        name="User Profile MyZone Panel"
+                        class="com.luuuis.myzone.preference.MyZonePreferencePanel">
+        <resource type="velocity" name="view" location="com/luuuis/myzone/preference/myzone-preference-panel.vm"/>
+        <order>100</order>
+    </view-profile-panel>
+
+    <resource type="i18n" name="strings" location="com/luuuis/myzone/strings" />
+
 </atlassian-plugin>

@@ -1,0 +1,3 @@
+<div class="module isolated">
+    <span>Hello, $stringEscapeUtils.escapeHtml(${profileUser.fullName})!</span>
+</div>
