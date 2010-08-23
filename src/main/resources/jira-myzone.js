@@ -73,13 +73,14 @@ jQuery(document).ready(function() {
     // update the prefs whenever the timezone is changed
     jQuery('#myzone-select-timezone').change(function() {
         jQuery('#myzone-select-timezone option:selected').each(function() {
-            var tz = jQuery(this).val()
+            var selectedTZ = jQuery(this).val()
+
             jQuery.ajax({
                 url: canonicalBaseUrl + contextPath + '/rest/myzone/1.0/prefs',
                 type: 'PUT',
-                data: JSON.stringify(tz),
+                data: JSON.stringify({ tzId: selectedTZ }),
                 contentType: "application/json; charset=utf-8",
-                success: function() { alert('Selected timezone: ' + tz) },
+                success: function() { alert('Selected timezone: ' + selectedTZ) },
                 error: function() { alert('Error setting timezone') }
             })
         })

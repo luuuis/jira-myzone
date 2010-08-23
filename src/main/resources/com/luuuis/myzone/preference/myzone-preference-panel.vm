@@ -4,9 +4,9 @@
     </div>
     <div>
     <select class="select" id="myzone-select-timezone" name="myzone-select-timezone">
-        <option value="" selected="true">$i18n.getText("myzone.default.timezone")</option>
+        <option value="" #if ($selectedTZ == "") selected="true" #end>$i18n.getText("myzone.timezone.disabled")</option>
         #foreach ($timezone in $timezones)
-        <option value="$timezone.idHtml">$timezone.getDisplayNameHtml()</option>
+        <option value="$timezone.idHtml" #if ($selectedTZ == $timezone.id) selected="true" #end>$timezone.getDisplayNameHtml()</option>
         #end
     </select>
     </div>

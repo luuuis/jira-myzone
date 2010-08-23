@@ -9,6 +9,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import com.luuuis.myzone.resource.Prefs;
 import com.opensymphony.user.User;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.joda.time.DateTimeZone;
@@ -92,6 +93,7 @@ public class MyZonePreferencePanel implements ViewProfilePanel, OptionalUserProf
     {
         Locale locale = authContext.getLocale();
         User callingUser = authContext.getUser();
+        String selectedTZ = profileUser.getPropertySet().getString(Prefs.SELECTED_TZ);
 
         Map<String, Object> params = Maps.newHashMap();
         params.put("locale", locale);
@@ -100,6 +102,7 @@ public class MyZonePreferencePanel implements ViewProfilePanel, OptionalUserProf
         params.put("stringEscapeUtils", new StringEscapeUtils());
         params.put("i18n", i18nFactory.getInstance(authContext.getLocale()));
         params.put("timezones", TimeZones.ALL);
+        params.put("selectedTZ", selectedTZ != null ? selectedTZ : "");
 
         return moduleDescriptor.getHtml(VIEW_TEMPLATE, params);
     }
