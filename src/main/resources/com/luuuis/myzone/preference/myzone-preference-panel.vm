@@ -1,8 +1,7 @@
 <div class="module isolated">
+    <h3>$i18n.getText("myzone.preferences")</h3>
     <div>
-    <label for="myzone-select-timezone">$i18n.getText("myzone.user.timezone")</label>
-    </div>
-    <div>
+    <label for="myzone-select-timezone">$i18n.getText("myzone.user.timezone")</label>:
     <select class="select" id="myzone-select-timezone" name="myzone-select-timezone">
         <option value="" #if ($selectedTZ == "") selected="true" #end>$i18n.getText("myzone.timezone.disabled")</option>
         #foreach ($timezone in $timezones)
