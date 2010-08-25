@@ -41,24 +41,32 @@ jQuery(document).ready(function() {
     var i = 0
 
     jQuery(".date").add(".attachment-date").each(function() {
-        var timeString = jQuery.trim(this.innerHTML)
-        var draw = function(contents, trigger, showPopup) {
-            jQuery.ajax({
-                url: canonicalBaseUrl + contextPath + '/rest/myzone/1.0/convert',
-                type: 'POST',
-                data: JSON.stringify({ time: timeString }),
-                dataType: 'json',
-                contentType: "application/json; charset=utf-8",
-                success: function(converted) {
+        var dateNode = this
+        var jQueryNode = jQuery(this)
+        var jiraTime = dateNode.innerHTML
+        var timeString = jQuery.trim(jiraTime)
+
+        jQuery.ajax({
+            url: canonicalBaseUrl + contextPath + '/rest/myzone/1.0/convert',
+            type: 'POST',
+            data: JSON.stringify({ time: timeString }),
+            dataType: 'json',
+            contentType: "application/json; charset=utf-8",
+            success: function(converted) {
+                dateNode.innerHTML = converted.time
+
+                // add a pop-up with the original date
+                jQueryNode.css('border-bottom', 'dotted 1px #000000')
+                var draw = function(contents, trigger, showPopup) {
                     contents.empty()
-                    contents.append(converted.time)
+                    contents.append(jiraTime)
                     showPopup()
                 }
-            });
-        }
 
-        var options = { onHover: true, showDelay: 400, hideDelay: 400, closeOthers: false, width: 200 }
-        AJS.InlineDialog(jQuery(this), "jira-myzone-" + i++, draw, options)
+                var options = { onHover: true, showDelay: 400, hideDelay: 400, closeOthers: false, width: 120 }
+                AJS.InlineDialog(jQueryNode, "jira-myzone-" + i++, draw, options)
+            }
+        });
     })
 
 })
