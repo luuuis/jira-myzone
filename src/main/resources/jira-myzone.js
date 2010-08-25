@@ -22,7 +22,6 @@ if (!this.MyZone) {
                         type: 'PUT',
                         data: JSON.stringify({ tzId: selectedTZ }),
                         contentType: "application/json; charset=utf-8",
-                        success: function() { alert('Selected timezone: ' + selectedTZ) },
                         error: function() { alert('Error setting timezone') }
                     })
                 })
