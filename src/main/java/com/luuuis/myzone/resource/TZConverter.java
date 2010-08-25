@@ -36,7 +36,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 
 /**
  * This service converts dates and times between different time zones.
@@ -46,6 +45,11 @@ import javax.ws.rs.core.Response;
 @Path ("convert")
 public class TZConverter
 {
+    /**
+     * A DateTZ instance with no conversion performed.
+     */
+    private static final DateTZ NULL_DATE_TZ = new DateTZ("");
+
     /**
      * Logger for this TZConverter instance.
      */
@@ -92,7 +96,7 @@ public class TZConverter
             if (selectedTZ == null)
             {
                 // TODO: no TZ selected, return a link or something...
-                return request;
+                return NULL_DATE_TZ;
             }
 
             SimpleDateFormat jiraDateFormat = new SimpleDateFormat(getDateFormatString());
@@ -112,7 +116,7 @@ public class TZConverter
         catch (ParseException e)
         {
             log.error("Unable to convert date: {}", request);
-            throw new WebApplicationException(Response.Status.BAD_REQUEST);
+            return NULL_DATE_TZ;
         }
     }
 

@@ -53,18 +53,20 @@ jQuery(document).ready(function() {
             dataType: 'json',
             contentType: "application/json; charset=utf-8",
             success: function(converted) {
-                dateNode.innerHTML = converted.time
+                if (converted.time != '') {
+                    dateNode.innerHTML = converted.time
 
-                // add a pop-up with the original date
-                jQueryNode.css('border-bottom', 'dotted 1px #000000')
-                var draw = function(contents, trigger, showPopup) {
-                    contents.empty()
-                    contents.append(jiraTime)
-                    showPopup()
+                    // add a pop-up with the original date
+                    jQueryNode.css('border-bottom', 'dotted 1px #000000')
+                    var draw = function(contents, trigger, showPopup) {
+                        contents.empty()
+                        contents.append(jiraTime)
+                        showPopup()
+                    }
+
+                    var options = { onHover: true, showDelay: 400, hideDelay: 400, closeOthers: false, width: 120 }
+                    AJS.InlineDialog(jQueryNode, "jira-myzone-" + i++, draw, options)
                 }
-
-                var options = { onHover: true, showDelay: 400, hideDelay: 400, closeOthers: false, width: 120 }
-                AJS.InlineDialog(jQueryNode, "jira-myzone-" + i++, draw, options)
             }
         });
     })
