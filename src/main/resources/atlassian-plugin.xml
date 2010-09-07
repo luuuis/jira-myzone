@@ -4,6 +4,7 @@
         <description>${project.description}</description>
         <version>${project.version}</version>
         <vendor name="${project.organization.name}" url="${project.organization.url}"/>
+        <application-version min="4.1"/>
     </plugin-info>
 
     <rest key="MyZone REST API" path="/myzone" version="1.0">

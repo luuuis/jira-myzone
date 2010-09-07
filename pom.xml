@@ -68,8 +68,8 @@
     </build>
 
     <properties>
-        <jira.version>4.2-SNAPSHOT</jira.version>
-        <jira.data.version>4.2-SNAPSHOT</jira.data.version>
+        <jira.version>4.1.2</jira.version>
+        <jira.data.version>4.1.2</jira.data.version>
     </properties>
 
 </project>
