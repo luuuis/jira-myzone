@@ -8,17 +8,13 @@ if (!this.MyZone) {
     if (typeof MyZone.registerChangeListener !== 'function') {
         MyZone.registerChangeListener = function(selectId) {
             var selector = '#' + selectId
-            var canonicalBaseUrl = (function(){
-                var uri = AJS.parseUri(window.location);
-                return uri.protocol + "://" + uri.authority;
-            })();
 
             AJS.$(selector).change(function() {
                 AJS.$(selector + ' option:selected').each(function() {
                     var selectedTZ = AJS.$(this).val()
 
                     AJS.$.ajax({
-                        url: canonicalBaseUrl + contextPath + '/rest/myzone/1.0/prefs',
+                        url: contextPath + '/rest/myzone/1.0/prefs',
                         type: 'PUT',
                         data: JSON.stringify({ tzId: selectedTZ }),
                         contentType: "application/json; charset=utf-8",
@@ -31,11 +27,6 @@ if (!this.MyZone) {
 }());
 
 AJS.$(document).ready(function() {
-    var canonicalBaseUrl = (function(){
-        var uri = AJS.parseUri(window.location);
-        return uri.protocol + "://" + uri.authority;
-    })();
-
     var now = new Date().getTime()
     var i = 0
 
@@ -46,7 +37,7 @@ AJS.$(document).ready(function() {
         var timeString = jQuery.trim(jiraTime)
 
         AJS.$.ajax({
-            url: canonicalBaseUrl + contextPath + '/rest/myzone/1.0/convert',
+            url: contextPath + '/rest/myzone/1.0/convert',
             type: 'POST',
             data: JSON.stringify({ time: timeString }),
             dataType: 'json',
