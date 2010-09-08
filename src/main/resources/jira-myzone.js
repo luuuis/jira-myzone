@@ -13,11 +13,11 @@ if (!this.MyZone) {
                 return uri.protocol + "://" + uri.authority;
             })();
 
-            jQuery(selector).change(function() {
-                jQuery(selector + ' option:selected').each(function() {
-                    var selectedTZ = jQuery(this).val()
+            AJS.$(selector).change(function() {
+                AJS.$(selector + ' option:selected').each(function() {
+                    var selectedTZ = AJS.$(this).val()
 
-                    jQuery.ajax({
+                    AJS.$.ajax({
                         url: canonicalBaseUrl + contextPath + '/rest/myzone/1.0/prefs',
                         type: 'PUT',
                         data: JSON.stringify({ tzId: selectedTZ }),
@@ -30,7 +30,7 @@ if (!this.MyZone) {
     }
 }());
 
-jQuery(document).ready(function() {
+AJS.$(document).ready(function() {
     var canonicalBaseUrl = (function(){
         var uri = AJS.parseUri(window.location);
         return uri.protocol + "://" + uri.authority;
@@ -39,13 +39,13 @@ jQuery(document).ready(function() {
     var now = new Date().getTime()
     var i = 0
 
-    jQuery(".date").add(".attachment-date").each(function() {
+    AJS.$(".date, .attachment-date").each(function() {
         var dateNode = this
         var jQueryNode = jQuery(this)
         var jiraTime = dateNode.innerHTML
         var timeString = jQuery.trim(jiraTime)
 
-        jQuery.ajax({
+        AJS.$.ajax({
             url: canonicalBaseUrl + contextPath + '/rest/myzone/1.0/convert',
             type: 'POST',
             data: JSON.stringify({ time: timeString }),
