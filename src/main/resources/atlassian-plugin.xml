@@ -12,6 +12,8 @@
     </rest>
 
     <web-resource key="jira-myzone" name="JIRA MyZone Javascript">
+        <dependency>com.atlassian.auiplugin:ajs</dependency>
+        <dependency>jira.webresources:jira-global</dependency>
         <resource name="jira-myzone.js" type="download" location="jira-myzone.js"/>
         <context>atl.general</context>
     </web-resource>
