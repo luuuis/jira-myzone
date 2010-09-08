@@ -23,6 +23,7 @@
                     key="servlet-filter" class="com.luuuis.myzone.filter.RequireJsResourcesFilter"
                     location="before-dispatch" weight="200">
         <url-pattern>/browse/*</url-pattern>
+        <url-pattern>*/ViewProfile.jspa</url-pattern>
         <dispatcher>REQUEST</dispatcher>
     </servlet-filter>
 
