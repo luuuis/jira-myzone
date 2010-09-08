@@ -14,8 +14,15 @@
 
     <web-resource key="jira-myzone" name="JIRA MyZone Javascript">
         <resource name="jira-myzone.js" type="download" location="jira-myzone.js"/>
-        <context>atl.general</context>
     </web-resource>
+
+    <!-- JIRA 4.1 alternative to web-resource contexts -->
+    <servlet-filter name="JIRA MyZone Resources Filter"
+                    key="servlet-filter" class="com.luuuis.myzone.filter.RequireJsResourcesFilter"
+                    location="before-dispatch" weight="200">
+        <url-pattern>/browse/*</url-pattern>
+        <dispatcher>REQUEST</dispatcher>
+    </servlet-filter>
 
     <view-profile-panel key="profile-panel"
                         i18n-name-key="myzone.name"
