@@ -28,7 +28,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class DateTZ
 {
     @XmlElement
-    private String time;
+    private String time_;
 
     public DateTZ()
     {
@@ -36,22 +36,22 @@ public class DateTZ
 
     public DateTZ(String time)
     {
-        this.time = time;
+        this.time_ = time;
     }
 
     public String getTime()
     {
-        return time;
+        return time_;
     }
 
     public void setTime(String time)
     {
-        this.time = time;
+        this.time_ = time;
     }
 
     @Override
     public String toString()
     {
-        return "DateTZ{time='" + time + '\'' + '}';
+        return "DateTZ{time='" + time_ + '\'' + '}';
     }
 }
