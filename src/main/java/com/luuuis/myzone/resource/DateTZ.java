@@ -20,6 +20,7 @@ package com.luuuis.myzone.resource;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 
 /**
  * A date with a timezone.
@@ -27,8 +28,8 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement
 public class DateTZ
 {
-    @XmlElement
-    private String time_;
+    @XmlElement(name = "time")
+    private String time;
 
     public DateTZ()
     {
@@ -36,22 +37,23 @@ public class DateTZ
 
     public DateTZ(String time)
     {
-        this.time_ = time;
+        this.time = time;
     }
 
+    @XmlTransient
     public String getTime()
     {
-        return time_;
+        return time;
     }
 
     public void setTime(String time)
     {
-        this.time_ = time;
+        this.time = time;
     }
 
     @Override
     public String toString()
     {
-        return "DateTZ{time='" + time_ + '\'' + '}';
+        return "DateTZ{time='" + time + '\'' + '}';
     }
 }
