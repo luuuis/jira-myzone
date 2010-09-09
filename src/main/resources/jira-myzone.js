@@ -16,7 +16,7 @@ if (!this.MyZone) {
                     AJS.$.ajax({
                         url: contextPath + '/rest/myzone/1.0/prefs',
                         type: 'PUT',
-                        data: JSON.stringify({ tzId: selectedTZ }),
+                        data: JSON.stringify(selectedTZ),
                         contentType: "application/json; charset=utf-8",
                         error: function() { alert('Error setting timezone') }
                     })

@@ -64,10 +64,10 @@ public class Prefs
     /**
      * Sets the user preferences.
      *
-     * @param prefsMap a map containing the user's preferences
+     * @param timezoneID the identifier time zone
      */
     @PUT
-    public void setPreferences(HashMap<String, String> prefsMap)
+    public void setPreferences(String timezoneID)
     {
         User user = authContext.getUser();
         if (user == null)
@@ -75,7 +75,6 @@ public class Prefs
             throw new WebApplicationException(401);
         }
 
-        String timezoneID = prefsMap.get(TZ_ID);
         user.getPropertySet().setString(SELECTED_TZ, timezoneID);
     }
 
