@@ -115,7 +115,7 @@ public class TZConverter
         }
         catch (ParseException e)
         {
-            log.error("Unable to convert date: {}", request);
+            log.debug("Unable to convert date: {}", request);
             return NULL_DATE_TZ;
         }
     }
