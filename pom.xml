@@ -84,4 +84,18 @@
         <jira.data.version>4.1.2</jira.data.version>
     </properties>
 
+    <repositories>
+        <repository>
+            <id>atlassian-mvn</id>
+            <url>https://maven.atlassian.com/repository/public</url>
+        </repository>
+    </repositories>
+
+    <pluginRepositories>
+        <pluginRepository>
+            <id>atlassian-mvn</id>
+            <url>https://maven.atlassian.com/repository/public</url>
+        </pluginRepository>
+    </pluginRepositories>
+
 </project>
