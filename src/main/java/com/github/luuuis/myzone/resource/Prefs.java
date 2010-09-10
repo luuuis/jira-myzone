@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.luuuis.myzone.resource;
+package com.github.luuuis.myzone.resource;
 
 import com.atlassian.jira.security.JiraAuthenticationContext;
 import com.google.common.collect.Maps;
