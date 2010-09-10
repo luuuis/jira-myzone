@@ -9,7 +9,7 @@
 
     <rest key="MyZone REST API" path="/myzone" version="1.0">
         <description>JIRA MyZone REST API</description>
-        <package>com.luuuis.myzone.resource</package>
+        <package>com.github.luuuis.myzone.resource</package>
     </rest>
 
     <web-resource key="jira-myzone" name="JIRA MyZone Javascript">
@@ -20,7 +20,7 @@
 
     <!-- JIRA 4.1 alternative to web-resource contexts -->
     <servlet-filter name="JIRA MyZone Resources Filter"
-                    key="servlet-filter" class="com.luuuis.myzone.filter.RequireJsResourcesFilter"
+                    key="servlet-filter" class="com.github.luuuis.myzone.filter.RequireJsResourcesFilter"
                     location="before-dispatch" weight="200">
         <url-pattern>/browse/*</url-pattern>
         <url-pattern>*/ViewProfile.jspa</url-pattern>
@@ -30,11 +30,11 @@
     <view-profile-panel key="profile-panel"
                         i18n-name-key="myzone.name"
                         name="User Profile MyZone Panel"
-                        class="com.luuuis.myzone.preference.MyZonePreferencePanel">
-        <resource type="velocity" name="view" location="com/luuuis/myzone/preference/myzone-preference-panel.vm"/>
+                        class="com.github.luuuis.myzone.preference.MyZonePreferencePanel">
+        <resource type="velocity" name="view" location="com/github/luuuis/myzone/preference/myzone-preference-panel.vm"/>
         <order>100</order>
     </view-profile-panel>
 
-    <resource type="i18n" name="strings" location="com/luuuis/myzone/strings" />
+    <resource type="i18n" name="strings" location="com/github/luuuis/myzone/strings" />
 
 </atlassian-plugin>

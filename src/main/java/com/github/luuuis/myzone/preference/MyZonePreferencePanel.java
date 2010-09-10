@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.luuuis.myzone.preference;
+package com.github.luuuis.myzone.preference;
 
 import com.atlassian.jira.plugin.profile.OptionalUserProfilePanel;
 import com.atlassian.jira.plugin.profile.ViewProfilePanel;
@@ -27,7 +27,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import com.luuuis.myzone.resource.Prefs;
+import com.github.luuuis.myzone.resource.Prefs;
 import com.opensymphony.user.User;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.joda.time.DateTimeZone;

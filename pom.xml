@@ -5,15 +5,21 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
-    <groupId>com.luuuis</groupId>
+    <groupId>com.github.luuuis</groupId>
     <artifactId>jira-myzone-plugin</artifactId>
     <version>1.0-SNAPSHOT</version>
 
     <organization>
-        <name>Example Company</name>
-        <url>http://www.example.com/</url>
+        <name>Luis Miranda</name>
+        <url>http://github.com/luuuis/jira-myzone</url>
     </organization>
 
+    <scm>
+        <connection>scm:git:git://github.com/luuuis/jira-myzone.git</connection>
+        <developerConnection>scm:git:git://github.com/luuuis/jira-myzone.git</developerConnection>
+        <url>http://github.com/luuuis/jira-myzone.git</url>
+    </scm>
+    
     <name>jira-myzone</name>
     <description>This plugin shifts times in JIRA to your local timezone.</description>
     <packaging>atlassian-plugin</packaging>

@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.luuuis.myzone.filter;
+package com.github.luuuis.myzone.filter;
 
 import com.atlassian.jira.ComponentManager;
 import com.atlassian.plugin.webresource.WebResourceManager;
@@ -53,7 +53,7 @@ public class RequireJsResourcesFilter implements Filter
         WebResourceManager webResourceManager = ComponentManager.getInstance().getWebResourceManager();
 
         // TODO move into filter params
-        webResourceManager.requireResource("com.luuuis.jira-myzone-plugin:jira-myzone");
+        webResourceManager.requireResource("com.github.luuuis.jira-myzone-plugin:jira-myzone");
         filterChain.doFilter(servletRequest, servletResponse);
     }
 }

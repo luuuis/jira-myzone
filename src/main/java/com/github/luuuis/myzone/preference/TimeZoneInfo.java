@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.luuuis.myzone.preference;
+package com.github.luuuis.myzone.preference;
 
 import com.google.common.collect.Lists;
 import org.apache.commons.lang.StringEscapeUtils;
