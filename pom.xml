@@ -14,6 +14,12 @@
         <url>http://www.example.com/</url>
     </organization>
 
+    <scm>
+        <connection>scm:git:git://github.com/luuuis/jira-myzone.git</connection>
+        <developerConnection>scm:git:git://github.com/luuuis/jira-myzone.git</developerConnection>
+        <url>http://github.com/luuuis/jira-myzone.git</url>
+    </scm>
+    
     <name>jira-myzone</name>
     <description>This plugin shifts times in JIRA to your local timezone.</description>
     <packaging>atlassian-plugin</packaging>
