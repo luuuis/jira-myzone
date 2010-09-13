@@ -5,7 +5,7 @@ your local timezone.
 
 Prerequisites
 -------------
-This plugin is compatible with JIRA 4.2.
+This plugin is compatible with JIRA 4.1 and JIRA 4.2.
 
 Installation
 ------------
