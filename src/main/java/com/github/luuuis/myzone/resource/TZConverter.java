@@ -36,7 +36,6 @@ import javax.ws.rs.core.MediaType;
 import java.text.MessageFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
@@ -59,7 +58,7 @@ public class TZConverter
     /**
      * Logger for this TZConverter instance.
      */
-    private final Logger log = LoggerFactory.getLogger(TZConverter.class);
+    private final Logger logger = LoggerFactory.getLogger(TZConverter.class);
 
     /**
      * A JiraAuthenticationContext.
@@ -93,7 +92,7 @@ public class TZConverter
     @POST
     public DateTZ convert(DateTZ request)
     {
-        log.debug("Received date: {}", request);
+        logger.debug("Received date: {}", request);
         try
         {
             User user = authContext.getUser();
@@ -119,7 +118,7 @@ public class TZConverter
         }
         catch (ParseException e)
         {
-            log.debug("Unable to convert date: {}", request);
+            logger.debug("Unable to convert date: {}", request);
             return NULL_DATE_TZ;
         }
     }
@@ -133,54 +132,100 @@ public class TZConverter
     private Date parse(String timeString) throws ParseException {
         TimeZone serverTZ = TimeZone.getDefault();
 
-        SimpleDateFormat completeFmt = createDateFormat(getCompleteDateFormatString(), serverTZ);
+        String completeFormatString = getCompleteDateFormatString();
         try {
-            return completeFmt.parse(timeString);
+            Date date = createDateFormat(completeFormatString, serverTZ).parse(timeString);
+            logger.debug("Parsed using format '{}': {}", getCompleteDateFormatString(), timeString);
+            return date;
         }
         catch (ParseException e1) {
+            logger.debug("Failed to parse using format '{}': {}", getCompleteDateFormatString(), timeString);
+
             I18nHelper i18n = i18nFactory.getInstance(authContext.getLocale());
 
-            // ok, maybe yesterday?
+            // a date in the last week?
+            String dayFormatString = getDayFormatString();
             try {
-                String yesterdayFmt = i18n.getUnescapedText("common.concepts.yesterday");
-                Object[] timeYesterday = new MessageFormat(yesterdayFmt).parse(timeString);
-                log.debug("Time yesterday: {}", Arrays.toString(timeYesterday));
+                Calendar timeAndDayOfWeek = Calendar.getInstance(serverTZ);
+                timeAndDayOfWeek.setTime(new SimpleDateFormat(dayFormatString).parse(timeString));
 
-                Date hourYesterday = createDateFormat(getTimeFormatString(), serverTZ).parse((String) timeYesterday[0]);
+                Calendar now = calendarNow(serverTZ);
 
-                Calendar hoursCal = getInstance(serverTZ);
-                hoursCal.setTime(hourYesterday);
+                // copy the time of day
+                copy(HOUR_OF_DAY, timeAndDayOfWeek, now);
+                copy(MINUTE, timeAndDayOfWeek, now);
+                copy(SECOND, timeAndDayOfWeek, now);
 
-                Calendar dateCal = getInstance(serverTZ);
-                dateCal.setTime(new Date());
-                dateCal.set(HOUR_OF_DAY, hoursCal.get(HOUR_OF_DAY));
-                dateCal.set(MINUTE, hoursCal.get(MINUTE));
-                dateCal.set(SECOND, hoursCal.get(SECOND));
-                dateCal.add(DAY_OF_YEAR, -1);
-
-                return dateCal.getTime();
+                // adjust the day
+                int dowToday = now.get(DAY_OF_WEEK);
+                int dowIssue = timeAndDayOfWeek.get(DAY_OF_WEEK);
+                int daysAgo = dowIssue < dowToday ? (dowToday - dowIssue) : (7 - (dowIssue - dowToday));
+                now.add(DAY_OF_YEAR, -1*daysAgo);
+                
+                logger.debug("Parsed with format '{}': {}", dayFormatString, timeString);
+                return now.getTime();
             }
-            catch (ParseException e3)
+            catch (ParseException e2)
             {
-                // surely today!
-                String todayFmt = i18n.getUnescapedText("common.concepts.today");
-                Object[] timeToday = new MessageFormat(todayFmt).parse(timeString);
-                log.debug("Time today: {}", Arrays.toString(timeToday));
+                logger.debug("Failed to parse with format '{}': {}", dayFormatString, timeString);
 
-                Date hoursToday = createDateFormat(getTimeFormatString(), serverTZ).parse((String) timeToday[0]);
+                // ok, maybe yesterday?
+                String yesterdayFmt = i18n.getUnescapedText("common.concepts.yesterday");
+                try {
+                    Object[] timeYesterday = new MessageFormat(yesterdayFmt).parse(timeString);
 
-                Calendar hoursCal = getInstance(serverTZ);
-                hoursCal.setTime(hoursToday);
+                    Date hourYesterday = createDateFormat(getTimeFormatString(), serverTZ).parse((String) timeYesterday[0]);
 
-                Calendar dateCal = getInstance(serverTZ);
-                dateCal.setTime(new Date());
-                dateCal.set(HOUR_OF_DAY, hoursCal.get(HOUR_OF_DAY));
-                dateCal.set(MINUTE, hoursCal.get(MINUTE));
-                dateCal.set(SECOND, hoursCal.get(SECOND));
+                    Calendar timeYesterdayCal = getInstance(serverTZ);
+                    timeYesterdayCal.setTime(hourYesterday);
 
-                return dateCal.getTime();
+                    Calendar dateCal = calendarNow(serverTZ);
+                    copy(HOUR_OF_DAY, timeYesterdayCal, dateCal);
+                    copy(MINUTE, timeYesterdayCal, dateCal);
+                    copy(SECOND, timeYesterdayCal, dateCal);
+                    dateCal.add(DAY_OF_YEAR, -1);
+
+                    logger.debug("Parsed with format '{}': {}", yesterdayFmt, timeString);
+                    return dateCal.getTime();
+                }
+                catch (ParseException e3)
+                {
+                    logger.debug("Failed to parse with format '{}': {}", yesterdayFmt, timeString);
+
+                    // surely today!
+                    String todayFmt = i18n.getUnescapedText("common.concepts.today");
+                    logger.debug("Attempting to parse with format '{}': {}", todayFmt, timeString);
+                    Object[] timeToday = new MessageFormat(todayFmt).parse(timeString);
+
+                    Date hoursToday = createDateFormat(getTimeFormatString(), serverTZ).parse((String) timeToday[0]);
+
+                    Calendar timeTodayCal = getInstance(serverTZ);
+                    timeTodayCal.setTime(hoursToday);
+
+                    Calendar dateCal = calendarNow(serverTZ);
+                    copy(HOUR_OF_DAY, timeTodayCal, dateCal);
+                    copy(MINUTE, timeTodayCal, dateCal);
+                    copy(SECOND, timeTodayCal, dateCal);
+
+                    logger.debug("Parsed with format '{}': {}", todayFmt, timeString);
+                    return dateCal.getTime();
+                }
             }
         }
+    }
+
+    /**
+     * Copies the value of the field from one Calendar instance to another.
+     *
+     * @see java.util.Calendar#set(int, int)
+     * @see java.util.Calendar#get(int)
+     *
+     * @param field the field to copy
+     * @param from the Calendar instance to copy from
+     * @param to the Calendar instance to copy to
+     */
+    protected void copy(int field, Calendar from, Calendar to) {
+        to.set(field, from.get(field));
     }
 
     /**
@@ -220,9 +265,22 @@ public class TZConverter
      * @param timeZone a TimeZone
      * @return a SimpleDateFormat
      */
-    protected SimpleDateFormat createDateFormat(String formatString, TimeZone timeZone) {
+    static protected SimpleDateFormat createDateFormat(String formatString, TimeZone timeZone) {
         SimpleDateFormat result = new SimpleDateFormat(formatString);
         result.setTimeZone(timeZone);
+
+        return result;
+    }
+
+    /**
+     * Returns a new Calendar with the given TimeZone, and the date initialised to now.
+     *
+     * @param tz a TimeZone to use
+     * @return a Calendar
+     */
+    static protected Calendar calendarNow(TimeZone tz) {
+        Calendar result = Calendar.getInstance(tz);
+        result.setTimeInMillis(System.currentTimeMillis());
 
         return result;
     }
