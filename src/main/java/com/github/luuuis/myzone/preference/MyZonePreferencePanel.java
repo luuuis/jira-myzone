@@ -23,11 +23,11 @@ import com.atlassian.jira.plugin.profile.ViewProfilePanel;
 import com.atlassian.jira.plugin.profile.ViewProfilePanelModuleDescriptor;
 import com.atlassian.jira.security.JiraAuthenticationContext;
 import com.atlassian.jira.util.I18nHelper;
+import com.github.luuuis.myzone.resource.Prefs;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import com.github.luuuis.myzone.resource.Prefs;
 import com.opensymphony.user.User;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.joda.time.DateTimeZone;
@@ -41,7 +41,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * TODO: Document this class / interface here
+ * This profile panel allows users to select a timezone.
  *
  * @since v4.2
  */

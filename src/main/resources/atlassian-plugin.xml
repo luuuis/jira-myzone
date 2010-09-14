@@ -28,7 +28,7 @@
     </servlet-filter>
 
     <view-profile-panel key="profile-panel"
-                        i18n-name-key="myzone.name"
+                        i18n-name-key="myzone.tab.name"
                         name="User Profile MyZone Panel"
                         class="com.github.luuuis.myzone.preference.MyZonePreferencePanel">
         <resource type="velocity" name="view" location="com/github/luuuis/myzone/preference/myzone-preference-panel.vm"/>
