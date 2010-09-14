@@ -38,6 +38,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Locale;
 import java.util.TimeZone;
 
 import static java.util.Calendar.*;
@@ -108,10 +109,11 @@ public class TZConverter
             }
 
             TimeZone userTZ = TimeZone.getTimeZone(selectedTZ);
+            Locale userLocale = authContext.getLocale();
 
             // do the conversion
-            Date dateInJiraTZ = parse(request.getTime());
-            String dateInUserTZ = format(dateInJiraTZ, userTZ);
+            Date dateInJiraTZ = parse(request.getTime(), userLocale);
+            String dateInUserTZ = format(dateInJiraTZ, userTZ, userLocale);
 
             // return a date string w/ TZ info
             return new DateTZ(String.format("%s %s", dateInUserTZ, userTZ.getDisplayName(true, TimeZone.SHORT)));
@@ -123,31 +125,31 @@ public class TZConverter
         }
     }
 
-    private String format(Date dateInJiraTZ, TimeZone userTZ) {
-        SimpleDateFormat userDateFormat = createDateFormat(getCompleteDateFormatString(), userTZ);
+    private String format(Date dateInJiraTZ, TimeZone userTZ, Locale locale) {
+        SimpleDateFormat userDateFormat = createDateFormat(getCompleteDateFormatString(), userTZ, locale);
 
         return userDateFormat.format(dateInJiraTZ);
     }
 
-    private Date parse(String timeString) throws ParseException {
+    private Date parse(String timeString, Locale locale) throws ParseException {
         TimeZone serverTZ = TimeZone.getDefault();
 
         String completeFormatString = getCompleteDateFormatString();
         try {
-            Date date = createDateFormat(completeFormatString, serverTZ).parse(timeString);
+            Date date = createDateFormat(completeFormatString, serverTZ, locale).parse(timeString);
             logger.debug("Parsed using format '{}': {}", getCompleteDateFormatString(), timeString);
             return date;
         }
         catch (ParseException e1) {
             logger.debug("Failed to parse using format '{}': {}", getCompleteDateFormatString(), timeString);
 
-            I18nHelper i18n = i18nFactory.getInstance(authContext.getLocale());
+            I18nHelper i18n = i18nFactory.getInstance(locale);
 
             // a date in the last week?
             String dayFormatString = getDayFormatString();
             try {
                 Calendar timeAndDayOfWeek = Calendar.getInstance(serverTZ);
-                timeAndDayOfWeek.setTime(new SimpleDateFormat(dayFormatString).parse(timeString));
+                timeAndDayOfWeek.setTime(createDateFormat(dayFormatString, serverTZ, locale).parse(timeString));
 
                 Calendar now = calendarNow(serverTZ);
 
@@ -174,7 +176,7 @@ public class TZConverter
                 try {
                     Object[] timeYesterday = new MessageFormat(yesterdayFmt).parse(timeString);
 
-                    Date hourYesterday = createDateFormat(getTimeFormatString(), serverTZ).parse((String) timeYesterday[0]);
+                    Date hourYesterday = createDateFormat(getTimeFormatString(), serverTZ, locale).parse((String) timeYesterday[0]);
 
                     Calendar timeYesterdayCal = getInstance(serverTZ);
                     timeYesterdayCal.setTime(hourYesterday);
@@ -197,7 +199,7 @@ public class TZConverter
                     logger.debug("Attempting to parse with format '{}': {}", todayFmt, timeString);
                     Object[] timeToday = new MessageFormat(todayFmt).parse(timeString);
 
-                    Date hoursToday = createDateFormat(getTimeFormatString(), serverTZ).parse((String) timeToday[0]);
+                    Date hoursToday = createDateFormat(getTimeFormatString(), serverTZ, locale).parse((String) timeToday[0]);
 
                     Calendar timeTodayCal = getInstance(serverTZ);
                     timeTodayCal.setTime(hoursToday);
@@ -263,10 +265,11 @@ public class TZConverter
      *
      * @param formatString a format string
      * @param timeZone a TimeZone
+     * @param locale the user's Locale
      * @return a SimpleDateFormat
      */
-    static protected SimpleDateFormat createDateFormat(String formatString, TimeZone timeZone) {
-        SimpleDateFormat result = new SimpleDateFormat(formatString);
+    static protected SimpleDateFormat createDateFormat(String formatString, TimeZone timeZone, Locale locale) {
+        SimpleDateFormat result = new SimpleDateFormat(formatString, locale);
         result.setTimeZone(timeZone);
 
         return result;
