@@ -24,6 +24,9 @@ import com.atlassian.jira.security.JiraAuthenticationContext;
 import com.atlassian.jira.util.I18nHelper;
 import com.atlassian.jira.web.bean.I18nBean;
 import com.opensymphony.user.User;
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
+import org.joda.time.Days;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -112,7 +115,7 @@ public class TZConverter
             Locale userLocale = authContext.getLocale();
 
             // do the conversion
-            Date dateInJiraTZ = parse(request.getTime(), userLocale);
+            ParsedDate dateInJiraTZ = parse(request.getTime(), userLocale);
             String dateInUserTZ = format(dateInJiraTZ, userTZ, userLocale);
 
             // return a date string w/ TZ info
@@ -125,25 +128,61 @@ public class TZConverter
         }
     }
 
-    private String format(Date dateInJiraTZ, TimeZone userTZ, Locale locale) {
-        SimpleDateFormat userDateFormat = createDateFormat(getCompleteDateFormatString(), userTZ, locale);
+    private String format(ParsedDate parsedDate, TimeZone userTZ, Locale locale)
+    {
+        if (applicationProperties.getOption(APKeys.JIRA_LF_DATE_RELATIVE) && parsedDate.isRelative)
+        {
+            DateTime dateTime = new DateTime(parsedDate.date, DateTimeZone.forTimeZone(userTZ));
+            DateTime nowInUserTZ = new DateTime(DateTimeZone.forTimeZone(userTZ));
 
-        return userDateFormat.format(dateInJiraTZ);
+            int days = Days.daysBetween(dateTime, nowInUserTZ).getDays();
+
+            // today
+            if (days < 1)
+            {
+                String todayFmt = getTodayFormatString();
+                SimpleDateFormat dateFormat = createDateFormat(getTimeFormatString(), userTZ, locale);
+
+                return new MessageFormat(todayFmt).format(new Object[] {dateFormat.format(dateTime.toDate())});
+            }
+
+            // yesterday
+            if (days < 2)
+            {
+                String yesterdayFmt = getYesterdayFormatString();
+                SimpleDateFormat dateFormat = createDateFormat(getTimeFormatString(), userTZ, locale);
+
+                return new MessageFormat(yesterdayFmt).format(new Object[] {dateFormat.format(dateTime.toDate())});
+            }
+
+            // last week
+            if (days < 7)
+            {
+                SimpleDateFormat dateFormat = createDateFormat(getDayFormatString(), userTZ, locale);
+
+                return dateFormat.format(dateTime.toDate());
+            }
+        }
+
+        // complete format
+        return createDateFormat(getCompleteDateFormatString(), userTZ, locale).format(parsedDate.date);
     }
 
-    private Date parse(String timeString, Locale locale) throws ParseException {
+    private ParsedDate parse(String timeString, Locale locale) throws ParseException
+    {
         TimeZone serverTZ = TimeZone.getDefault();
 
         String completeFormatString = getCompleteDateFormatString();
-        try {
+        try
+        {
             Date date = createDateFormat(completeFormatString, serverTZ, locale).parse(timeString);
             logger.debug("Parsed using format '{}': {}", getCompleteDateFormatString(), timeString);
-            return date;
-        }
-        catch (ParseException e1) {
-            logger.debug("Failed to parse using format '{}': {}", getCompleteDateFormatString(), timeString);
 
-            I18nHelper i18n = i18nFactory.getInstance(locale);
+            return new ParsedDate(false, date);
+        }
+        catch (ParseException e1)
+        {
+            logger.debug("Failed to parse using format '{}': {}", getCompleteDateFormatString(), timeString);
 
             // a date in the last week?
             String dayFormatString = getDayFormatString();
@@ -165,14 +204,14 @@ public class TZConverter
                 now.add(DAY_OF_YEAR, -1*daysAgo);
                 
                 logger.debug("Parsed with format '{}': {}", dayFormatString, timeString);
-                return now.getTime();
+                return new ParsedDate(true, now.getTime());
             }
             catch (ParseException e2)
             {
                 logger.debug("Failed to parse with format '{}': {}", dayFormatString, timeString);
 
                 // ok, maybe yesterday?
-                String yesterdayFmt = i18n.getUnescapedText("common.concepts.yesterday");
+                String yesterdayFmt = getYesterdayFormatString();
                 try {
                     Object[] timeYesterday = new MessageFormat(yesterdayFmt).parse(timeString);
 
@@ -188,14 +227,14 @@ public class TZConverter
                     dateCal.add(DAY_OF_YEAR, -1);
 
                     logger.debug("Parsed with format '{}': {}", yesterdayFmt, timeString);
-                    return dateCal.getTime();
+                    return new ParsedDate(true, dateCal.getTime());
                 }
                 catch (ParseException e3)
                 {
                     logger.debug("Failed to parse with format '{}': {}", yesterdayFmt, timeString);
 
                     // surely today!
-                    String todayFmt = i18n.getUnescapedText("common.concepts.today");
+                    String todayFmt = getTodayFormatString();
                     logger.debug("Attempting to parse with format '{}': {}", todayFmt, timeString);
                     Object[] timeToday = new MessageFormat(todayFmt).parse(timeString);
 
@@ -210,7 +249,7 @@ public class TZConverter
                     copy(SECOND, timeTodayCal, dateCal);
 
                     logger.debug("Parsed with format '{}': {}", todayFmt, timeString);
-                    return dateCal.getTime();
+                    return new ParsedDate(true, dateCal.getTime());
                 }
             }
         }
@@ -226,7 +265,8 @@ public class TZConverter
      * @param from the Calendar instance to copy from
      * @param to the Calendar instance to copy to
      */
-    protected void copy(int field, Calendar from, Calendar to) {
+    protected void copy(int field, Calendar from, Calendar to)
+    {
         to.set(field, from.get(field));
     }
 
@@ -251,6 +291,28 @@ public class TZConverter
     }
 
     /**
+     * Returns the format string used for "today" relative dates.
+     *
+     * @return the format string used for "today" relative dates
+     */
+    protected String getTodayFormatString()
+    {
+        I18nHelper i18n = i18nFactory.getInstance(authContext.getLocale());
+        return i18n.getUnescapedText("common.concepts.today");
+    }
+
+    /**
+     * Returns the format string used for "yesterday" relative dates.
+     *
+     * @return the format string used for "yesterday" relative dates
+     */
+    protected String getYesterdayFormatString()
+    {
+        I18nHelper i18n = i18nFactory.getInstance(authContext.getLocale());
+        return i18n.getUnescapedText("common.concepts.yesterday");
+    }
+
+    /**
      * Returns the time date format.
      *
      * @return a String containing the time date format
@@ -268,7 +330,8 @@ public class TZConverter
      * @param locale the user's Locale
      * @return a SimpleDateFormat
      */
-    static protected SimpleDateFormat createDateFormat(String formatString, TimeZone timeZone, Locale locale) {
+    static protected SimpleDateFormat createDateFormat(String formatString, TimeZone timeZone, Locale locale)
+    {
         SimpleDateFormat result = new SimpleDateFormat(formatString, locale);
         result.setTimeZone(timeZone);
 
@@ -281,10 +344,25 @@ public class TZConverter
      * @param tz a TimeZone to use
      * @return a Calendar
      */
-    static protected Calendar calendarNow(TimeZone tz) {
+    static protected Calendar calendarNow(TimeZone tz)
+    {
         Calendar result = Calendar.getInstance(tz);
         result.setTimeInMillis(System.currentTimeMillis());
 
         return result;
+    }
+
+    /**
+     * This struct represents a date that was parsed from a String.
+     */
+    static class ParsedDate
+    {
+        final boolean isRelative;
+        final Date date;
+
+        ParsedDate(boolean relative, Date date) {
+            isRelative = relative;
+            this.date = date;
+        }
     }
 }
