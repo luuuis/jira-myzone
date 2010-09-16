@@ -44,10 +44,11 @@ AJS.$(document).ready(function() {
             contentType: "application/json; charset=utf-8",
             success: function(converted) {
                 if (converted.time != '') {
+                    // write the converted date and underline it
                     dateNode.innerHTML = converted.time
+                    jQueryNode.wrapInner('<span style="border-bottom: dotted 1px #bebebe;">')
 
                     // add a pop-up with the original date
-                    jQueryNode.css('border-bottom', 'dotted 1px #000000')
                     var draw = function(contents, trigger, showPopup) {
                         contents.empty()
                         contents.append(jiraTime)
