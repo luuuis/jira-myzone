@@ -51,11 +51,11 @@ AJS.$(document).ready(function() {
                     // add a pop-up with the original date
                     var draw = function(contents, trigger, showPopup) {
                         contents.empty()
-                        contents.append(jiraTime)
+                        contents.append(AJS.format('{0}: {1}', converted.label, timeString))
                         showPopup()
                     }
 
-                    var options = { onHover: true, showDelay: 400, hideDelay: 400, closeOthers: false, width: 120 }
+                    var options = { onHover: true, showDelay: 400, hideDelay: 400, closeOthers: false, width: 200 }
                     AJS.InlineDialog(jQueryNode, "jira-myzone-" + i++, draw, options)
                 }
             }

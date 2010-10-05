@@ -26,17 +26,21 @@ import javax.xml.bind.annotation.XmlTransient;
  * A date with a timezone.
  */
 @XmlRootElement
-public class DateTZ
+public class ConvertDTO
 {
+    @XmlElement(name = "label")
+    private String label;
+
     @XmlElement(name = "time")
     private String time;
 
-    public DateTZ()
+    public ConvertDTO()
     {
     }
 
-    public DateTZ(String time)
+    public ConvertDTO(String label, String time)
     {
+        this.label = label;
         this.time = time;
     }
 
@@ -54,6 +58,6 @@ public class DateTZ
     @Override
     public String toString()
     {
-        return "DateTZ{time='" + time + '\'' + '}';
+        return "ConvertDTO{time='" + time + '\'' + '}';
     }
 }

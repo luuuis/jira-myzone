@@ -55,11 +55,6 @@ import static java.util.Calendar.*;
 public class TZConverter
 {
     /**
-     * A DateTZ instance with no conversion performed.
-     */
-    private static final DateTZ NULL_DATE_TZ = new DateTZ("");
-
-    /**
      * Logger for this TZConverter instance.
      */
     private final Logger logger = LoggerFactory.getLogger(TZConverter.class);
@@ -94,7 +89,7 @@ public class TZConverter
     }
 
     @POST
-    public DateTZ convert(DateTZ request)
+    public ConvertDTO convert(ConvertDTO request)
     {
         logger.debug("Received date: {}", request);
         try
@@ -108,7 +103,7 @@ public class TZConverter
             String selectedTZ = user.getPropertySet().getString(Prefs.SELECTED_TZ);
             if (selectedTZ == null)
             {
-                return NULL_DATE_TZ;
+                return newDTO(null);
             }
 
             TimeZone userTZ = TimeZone.getTimeZone(selectedTZ);
@@ -119,13 +114,25 @@ public class TZConverter
             String dateInUserTZ = format(dateInJiraTZ, userTZ, userLocale);
 
             // return a date string w/ TZ info
-            return new DateTZ(String.format("%s %s", dateInUserTZ, userTZ.getDisplayName(true, TimeZone.SHORT)));
+            return newDTO(String.format("%s %s", dateInUserTZ, userTZ.getDisplayName(true, TimeZone.SHORT)));
         }
         catch (ParseException e)
         {
             logger.debug("Unable to convert date: {}", request);
-            return NULL_DATE_TZ;
+            return newDTO(null);
         }
+    }
+
+    /**
+     * Creates a new ConvertDTO with the given date string. If the date string is null, it is converted into "".
+     *
+     * @param dateString a String containing a date
+     * @return a ConvertDTO
+     */
+    private ConvertDTO newDTO(String dateString) {
+        I18nHelper i18n = i18nFactory.getInstance(authContext.getLocale());
+
+        return new ConvertDTO(i18n.getText("myzone.popup.label"), dateString != null ? dateString : "");
     }
 
     private String format(ParsedDate parsedDate, TimeZone userTZ, Locale locale)
