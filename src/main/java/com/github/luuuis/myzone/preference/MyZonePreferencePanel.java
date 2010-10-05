@@ -23,6 +23,7 @@ import com.atlassian.jira.plugin.profile.ViewProfilePanel;
 import com.atlassian.jira.plugin.profile.ViewProfilePanelModuleDescriptor;
 import com.atlassian.jira.security.JiraAuthenticationContext;
 import com.atlassian.jira.util.I18nHelper;
+import com.github.luuuis.myzone.BuildConstants;
 import com.github.luuuis.myzone.resource.Prefs;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
@@ -63,6 +64,11 @@ public class MyZonePreferencePanel implements ViewProfilePanel, OptionalUserProf
     private final I18nHelper.BeanFactory i18nFactory;
 
     /**
+     * A BuildConstants instance.
+     */
+    private final BuildConstants buildConstants;
+
+    /**
      * A reference to the module descriptor for this panel.
      */
     private ViewProfilePanelModuleDescriptor moduleDescriptor;
@@ -72,11 +78,13 @@ public class MyZonePreferencePanel implements ViewProfilePanel, OptionalUserProf
      *
      * @param authContext a JiraAuthenticationContext
      * @param i18nFactory a I18nHelper.BeanFactory
+     * @param buildConstants a BuildConstants
      */
-    public MyZonePreferencePanel(JiraAuthenticationContext authContext, I18nHelper.BeanFactory i18nFactory)
+    public MyZonePreferencePanel(JiraAuthenticationContext authContext, I18nHelper.BeanFactory i18nFactory, BuildConstants buildConstants)
     {
         this.i18nFactory = i18nFactory;
         this.authContext = authContext;
+        this.buildConstants = buildConstants;
     }
 
     /**
@@ -121,6 +129,7 @@ public class MyZonePreferencePanel implements ViewProfilePanel, OptionalUserProf
         params.put("i18n", i18nFactory.getInstance(authContext.getLocale()));
         params.put("timezones", TimeZones.ALL);
         params.put("selectedTZ", selectedTZ != null ? selectedTZ : "");
+        params.put("buildConstants", buildConstants);
 
         return moduleDescriptor.getHtml(VIEW_TEMPLATE, params);
     }
@@ -131,7 +140,6 @@ public class MyZonePreferencePanel implements ViewProfilePanel, OptionalUserProf
     static class TimeZones
     {
         static final ImmutableList<TimeZoneInfo> ALL;
-
         static
         {
             // eliminate duplicate timezones

@@ -1,13 +1,36 @@
-<div class="module isolated">
-    <h3>$i18n.getText("myzone.preferences")</h3>
-    <div>
-    <label for="myzone-select-timezone">$i18n.getText("myzone.user.timezone")</label>:
-    <select class="select" id="myzone-select-timezone" name="myzone-select-timezone">
-        <option value="" #if ($selectedTZ == "") selected="true" #end>$i18n.getText("myzone.timezone.disabled")</option>
-        #foreach ($timezone in $timezones)
-        <option value="$timezone.idHtml" #if ($selectedTZ == $timezone.id) selected="true" #end>$timezone.getDisplayNameHtml()</option>
-        #end
-    </select>
-    <script type="text/javascript">MyZone.registerChangeListener('myzone-select-timezone')</script>
+<div id="primary" class="column">
+    <div class="content">
+        <div class="module">
+            <div class="mod-header"><h3>$i18n.getText("myzone.preferences")</h3></div>
+            <div class="mod-content">
+                <ul class="item-details">
+                    <li>
+                        <dl>
+                            <dt><label for="myzone-select-timezone">$i18n.getText("myzone.user.timezone")</label>:</dt>
+                            <dd style="align: right;">
+                                <select class="select" id="myzone-select-timezone" name="myzone-select-timezone">
+                                    <option value="" #if ($selectedTZ == "") selected="true" #end>$i18n.getText("myzone.timezone.disabled")</option>
+                                    #foreach ($timezone in $timezones)
+                                    <option value="$timezone.idHtml" #if ($selectedTZ == $timezone.id) selected="true" #end>$timezone.displayNameHtml</option>
+                                    #end
+                                </select>
+                            </dd>
+                        </dl>
+                    </li>
+                </ul>
+            </div>
+        </div>
     </div>
 </div>
+<div id="secondary" class="column">
+    <div class="content">
+        <div class="module">
+            <div class="mod-header"><h3>$i18n.getText("myzone.about")</h3></div>
+            <div class="mod-content">
+                <p>$i18n.getText("myzone.about.intro")</p>
+                <p>$i18n.getText("myzone.about.version", "$buildConstants.version")</p>
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">MyZone.registerChangeListener('myzone-select-timezone')</script>
