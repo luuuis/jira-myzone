@@ -62,7 +62,7 @@ if (!this.MyZone) {
                 contentType: "application/json; charset=utf-8",
                 success: function(reply) {
                     AJS.$.each(reply.times, function(serverTime, localTime) {
-                        if (localTime != '') {
+                        if (localTime && localTime != '') {
                             // write the converted date and underline it
                             var $dates = timesOnPage[serverTime]
                             AJS.$.each($dates, function(i, $date) {
