@@ -18,46 +18,42 @@
  */
 package com.github.luuuis.myzone.resource;
 
+import java.util.Arrays;
+import java.util.Iterator;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlTransient;
 
 /**
- * A date with a timezone.
+ * A request DTO.
  */
 @XmlRootElement
-public class ConvertDTO
+class RequestDTO implements Iterable<String>
 {
-    @XmlElement(name = "label")
-    private String label;
+    @XmlElement (name = "times")
+    String[] times = new String[0];
 
-    @XmlElement(name = "time")
-    private String time;
-
-    public ConvertDTO()
+    RequestDTO()
     {
     }
 
-    public ConvertDTO(String label, String time)
+    RequestDTO(String[] times)
     {
-        this.label = label;
-        this.time = time;
+        this.times = times;
     }
 
-    @XmlTransient
-    public String getTime()
+    public Iterator<String> iterator()
     {
-        return time;
-    }
-
-    public void setTime(String time)
-    {
-        this.time = time;
+        return Arrays.asList(times).iterator();
     }
 
     @Override
     public String toString()
     {
-        return "ConvertDTO{time='" + time + '\'' + '}';
+        return "RequestDTO{times=" + (times == null ? null : Arrays.asList(times)) + '}';
+    }
+
+    public int length()
+    {
+        return times.length;
     }
 }

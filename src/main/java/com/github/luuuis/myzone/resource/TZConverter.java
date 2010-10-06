@@ -22,6 +22,8 @@ import com.atlassian.jira.config.properties.APKeys;
 import com.atlassian.jira.config.properties.ApplicationProperties;
 import com.atlassian.jira.security.JiraAuthenticationContext;
 import com.atlassian.jira.util.I18nHelper;
+import com.atlassian.jira.util.json.JSONException;
+import com.atlassian.jira.util.json.JSONObject;
 import com.atlassian.jira.web.bean.I18nBean;
 import com.opensymphony.user.User;
 import org.joda.time.DateTime;
@@ -35,7 +37,9 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 import java.util.TimeZone;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
@@ -50,6 +54,9 @@ import static java.util.Calendar.HOUR_OF_DAY;
 import static java.util.Calendar.MINUTE;
 import static java.util.Calendar.SECOND;
 import static java.util.Calendar.getInstance;
+import static java.util.TimeZone.SHORT;
+import static java.util.TimeZone.getDefault;
+import static java.util.TimeZone.getTimeZone;
 import static org.apache.commons.lang.StringUtils.isEmpty;
 
 /**
@@ -95,50 +102,69 @@ public class TZConverter
     }
 
     @POST
-    public ConvertDTO convert(ConvertDTO request)
+    public String convert(RequestDTO serverTimes) throws JSONException
     {
-        logger.debug("Received date: {}", request);
-        try
+        logger.debug("Received request: {}", serverTimes);
+        User user = authContext.getUser();
+        if (user == null)
         {
-            User user = authContext.getUser();
-            if (user == null)
-            {
-                throw new WebApplicationException(401);
-            }
+            throw new WebApplicationException(401);
+        }
 
-            String selectedTZ = user.getPropertySet().getString(Prefs.SELECTED_TZ);
-            if (isEmpty(selectedTZ))
-            {
-                return newDTO(null);
-            }
+        String selectedTZ = user.getPropertySet().getString(Prefs.SELECTED_TZ);
+        if (isEmpty(selectedTZ))
+        {
+            return asJSON(null);
+        }
 
-            TimeZone userTZ = TimeZone.getTimeZone(selectedTZ);
+        Map<String, String> times = new HashMap<String, String>(serverTimes.length());
+        for (String serverTime : serverTimes)
+        {
+            TimeZone userTZ = getTimeZone(selectedTZ);
             Locale userLocale = authContext.getLocale();
 
-            // do the conversion
-            ParsedDate dateInJiraTZ = parse(request.getTime(), userLocale);
-            String dateInUserTZ = format(dateInJiraTZ, userTZ, userLocale);
+            try
+            {
+                ParsedDate dateInJiraTZ = parse(serverTime, userLocale);
+                String dateInUserTZ = format(dateInJiraTZ, userTZ, userLocale);
+                String displayDate = String.format("%s %s", dateInUserTZ, userTZ.getDisplayName(true, SHORT));
 
-            // return a date string w/ TZ info
-            return newDTO(String.format("%s %s", dateInUserTZ, userTZ.getDisplayName(true, TimeZone.SHORT)));
+                // return date strings w/ TZ info
+                times.put(serverTime, displayDate);
+            }
+            catch (ParseException e)
+            {
+                logger.debug("Unable to convert date: {}", serverTime);
+                times.put(serverTime, null);
+            }
         }
-        catch (ParseException e)
-        {
-            logger.debug("Unable to convert date: {}", request);
-            return newDTO(null);
-        }
+
+        return asJSON(times);
     }
 
     /**
-     * Creates a new ConvertDTO with the given date string. If the date string is null, it is converted into "".
+     * Creates a new JSON reply.
      *
-     * @param dateString a String containing a date
-     * @return a ConvertDTO
+     * @param dates a Map containing pairs of server and local date
+     * @return a String that contains a JSON
+     * @throws com.atlassian.jira.util.json.JSONException if there's a problem serialising
      */
-    private ConvertDTO newDTO(String dateString) {
+    private String asJSON(Map<String, String> dates) throws JSONException
+    {
         I18nHelper i18n = i18nFactory.getInstance(authContext.getLocale());
+        ResponseDTO dto = new ResponseDTO(i18n.getText("myzone.popup.label"), dates);
 
-        return new ConvertDTO(i18n.getText("myzone.popup.label"), dateString != null ? dateString : "");
+        // HACK: serialise things explicitly since atlassian-rest has trouble serialising with maps
+        JSONObject convertedTimes = new JSONObject();
+        for (Map.Entry<String, String> pair : dates.entrySet())
+        {
+            convertedTimes.put(pair.getKey(), pair.getValue());
+        }
+
+        JSONObject json = new JSONObject();
+        json.put("label", dto.label);
+        json.put("times", convertedTimes);
+        return json.toString();
     }
 
     private String format(ParsedDate parsedDate, TimeZone userTZ, Locale locale)
@@ -156,7 +182,7 @@ public class TZConverter
                 String todayFmt = getTodayFormatString();
                 SimpleDateFormat dateFormat = createDateFormat(getTimeFormatString(), userTZ, locale);
 
-                return new MessageFormat(todayFmt).format(new Object[] {dateFormat.format(dateTime.toDate())});
+                return new MessageFormat(todayFmt).format(new Object[] { dateFormat.format(dateTime.toDate()) });
             }
 
             // yesterday
@@ -165,7 +191,7 @@ public class TZConverter
                 String yesterdayFmt = getYesterdayFormatString();
                 SimpleDateFormat dateFormat = createDateFormat(getTimeFormatString(), userTZ, locale);
 
-                return new MessageFormat(yesterdayFmt).format(new Object[] {dateFormat.format(dateTime.toDate())});
+                return new MessageFormat(yesterdayFmt).format(new Object[] { dateFormat.format(dateTime.toDate()) });
             }
 
             // last week
@@ -183,7 +209,7 @@ public class TZConverter
 
     private ParsedDate parse(String timeString, Locale locale) throws ParseException
     {
-        TimeZone serverTZ = TimeZone.getDefault();
+        TimeZone serverTZ = getDefault();
 
         String completeFormatString = getCompleteDateFormatString();
         try
@@ -199,7 +225,8 @@ public class TZConverter
 
             // a date in the last week?
             String dayFormatString = getDayFormatString();
-            try {
+            try
+            {
                 Calendar timeAndDayOfWeek = Calendar.getInstance(serverTZ);
                 timeAndDayOfWeek.setTime(createDateFormat(dayFormatString, serverTZ, locale).parse(timeString));
 
@@ -214,8 +241,8 @@ public class TZConverter
                 int dowToday = now.get(DAY_OF_WEEK);
                 int dowIssue = timeAndDayOfWeek.get(DAY_OF_WEEK);
                 int daysAgo = dowIssue < dowToday ? (dowToday - dowIssue) : (7 - (dowIssue - dowToday));
-                now.add(DAY_OF_YEAR, -1*daysAgo);
-                
+                now.add(DAY_OF_YEAR, -1 * daysAgo);
+
                 logger.debug("Parsed with format '{}': {}", dayFormatString, timeString);
                 return new ParsedDate(true, now.getTime());
             }
@@ -225,7 +252,8 @@ public class TZConverter
 
                 // ok, maybe yesterday?
                 String yesterdayFmt = getYesterdayFormatString();
-                try {
+                try
+                {
                     Object[] timeYesterday = new MessageFormat(yesterdayFmt).parse(timeString);
 
                     Date hourYesterday = createDateFormat(getTimeFormatString(), serverTZ, locale).parse((String) timeYesterday[0]);
@@ -271,12 +299,11 @@ public class TZConverter
     /**
      * Copies the value of the field from one Calendar instance to another.
      *
-     * @see java.util.Calendar#set(int, int)
-     * @see java.util.Calendar#get(int)
-     *
      * @param field the field to copy
      * @param from the Calendar instance to copy from
      * @param to the Calendar instance to copy to
+     * @see java.util.Calendar#set(int, int)
+     * @see java.util.Calendar#get(int)
      */
     protected void copy(int field, Calendar from, Calendar to)
     {
@@ -373,7 +400,8 @@ public class TZConverter
         final boolean isRelative;
         final Date date;
 
-        ParsedDate(boolean relative, Date date) {
+        ParsedDate(boolean relative, Date date)
+        {
             isRelative = relative;
             this.date = date;
         }

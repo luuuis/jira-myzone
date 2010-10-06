@@ -36,31 +36,50 @@ if (!this.MyZone) {
     /**
      * Converts a date node to the user's preferred time zone.
      */
-    if (typeof MyZone.convertDate !== 'function') {
-        MyZone.convertDate = function($date) {
-            var serverTimeString = AJS.$.trim($date.text())
+    if (typeof MyZone.convertDates !== 'function') {
+        MyZone.convertDates = function($dates) {
+            var serverTimes = []
+            var timesOnPage = {}
+            AJS.$.each($dates, function(i, $date) {
+                var serverTime = AJS.$.trim($date.text());
+
+                // lazily initiliase back references to jQuery node
+                var timeNodes = timesOnPage[serverTime]
+                if (timeNodes == null) {
+                    timesOnPage[serverTime] = timeNodes = []
+                }
+
+                // back-reference to jQuery node
+                timeNodes.push($date)
+                serverTimes.push(serverTime)
+            })
 
             AJS.$.ajax({
                 url: contextPath + '/rest/myzone/1.0/convert',
                 type: 'POST',
-                data: JSON.stringify({ time: serverTimeString }),
+                data: JSON.stringify({ times: serverTimes }),
                 dataType: 'json',
                 contentType: "application/json; charset=utf-8",
                 success: function(reply) {
-                    if (reply.time != '') {
-                        // write the converted date and underline it
-                        $date.html(AJS.format('<span style="border-bottom: 1px dotted #bebebe;">{0}</span>', reply.time))
+                    AJS.$.each(reply.times, function(serverTime, localTime) {
+                        if (localTime != '') {
+                            // write the converted date and underline it
+                            var $dates = timesOnPage[serverTime]
+                            AJS.$.each($dates, function(i, $date) {
+                                $date.html(AJS.format('<span style="border-bottom: 1px dotted #bebebe;">{0}</span>', localTime))
 
-                        // add a pop-up with the original date
-                        var draw = function(contents, trigger, showPopup) {
-                            contents.empty()
-                            contents.append(AJS.format('{0}: {1}', reply.label, serverTimeString))
-                            showPopup()
+                                // add a pop-up with the original date
+                                var draw = function(contents, trigger, showPopup) {
+                                    contents.empty()
+                                    contents.append(AJS.format('{0}: {1}', reply.label, serverTime))
+                                    showPopup()
+                                }
+
+                                var options = { onHover: true, showDelay: 400, hideDelay: 400, closeOthers: false, width: 200 }
+                                AJS.InlineDialog($date, "jira-myzone-" + popupSequence++, draw, options)
+                            })
                         }
-
-                        var options = { onHover: true, showDelay: 400, hideDelay: 400, closeOthers: false, width: 200 }
-                        AJS.InlineDialog($date, "jira-myzone-" + popupSequence++, draw, options)
-                    }
+                    })
                 }
             });
         }
@@ -71,8 +90,8 @@ if (!this.MyZone) {
 AJS.$(document).ready(function() {
 
     // convert all dates found on the page
-    AJS.$(".date, .attachment-date").each(function() {
-        MyZone.convertDate(AJS.$(this))
-    })
+    MyZone.convertDates(AJS.$.map(AJS.$(".date, .attachment-date"), function(elem, i) {
+        return AJS.$(elem)
+    }))
 
 })
