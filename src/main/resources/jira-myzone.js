@@ -43,15 +43,17 @@ if (!this.MyZone) {
             AJS.$.each($dates, function(i, $date) {
                 var serverTime = AJS.$.trim($date.text());
 
-                // lazily initiliase back references to jQuery node
-                var timeNodes = timesOnPage[serverTime]
-                if (timeNodes == null) {
-                    timesOnPage[serverTime] = timeNodes = []
-                }
+                if (serverTime.length > 0) {
+                    // lazily initiliase back references to jQuery node
+                    var timeNodes = timesOnPage[serverTime]
+                    if (timeNodes == null) {
+                        timesOnPage[serverTime] = timeNodes = []
+                    }
 
-                // back-reference to jQuery node
-                timeNodes.push($date)
-                serverTimes.push(serverTime)
+                    // back-reference to jQuery node
+                    timeNodes.push($date)
+                    serverTimes.push(serverTime)
+                }
             })
 
             if (serverTimes.length > 0) {
@@ -61,6 +63,7 @@ if (!this.MyZone) {
                     data: JSON.stringify({ times: serverTimes }),
                     dataType: 'json',
                     contentType: "application/json; charset=utf-8",
+                    global: false,
                     success: function(reply) {
                         AJS.$.each(reply.times, function(serverTime, localTime) {
                             if (localTime && localTime != '') {
