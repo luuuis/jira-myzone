@@ -54,34 +54,36 @@ if (!this.MyZone) {
                 serverTimes.push(serverTime)
             })
 
-            AJS.$.ajax({
-                url: contextPath + '/rest/myzone/1.0/convert',
-                type: 'POST',
-                data: JSON.stringify({ times: serverTimes }),
-                dataType: 'json',
-                contentType: "application/json; charset=utf-8",
-                success: function(reply) {
-                    AJS.$.each(reply.times, function(serverTime, localTime) {
-                        if (localTime && localTime != '') {
-                            // write the converted date and underline it
-                            var $dates = timesOnPage[serverTime]
-                            AJS.$.each($dates, function(i, $date) {
-                                $date.html(AJS.format('<span style="border-bottom: 1px dotted #bebebe;">{0}</span>', localTime))
+            if (serverTimes.length > 0) {
+                AJS.$.ajax({
+                    url: contextPath + '/rest/myzone/1.0/convert',
+                    type: 'POST',
+                    data: JSON.stringify({ times: serverTimes }),
+                    dataType: 'json',
+                    contentType: "application/json; charset=utf-8",
+                    success: function(reply) {
+                        AJS.$.each(reply.times, function(serverTime, localTime) {
+                            if (localTime && localTime != '') {
+                                // write the converted date and underline it
+                                var $dates = timesOnPage[serverTime]
+                                AJS.$.each($dates, function(i, $date) {
+                                    $date.html(AJS.format('<span style="border-bottom: 1px dotted #bebebe;">{0}</span>', localTime))
 
-                                // add a pop-up with the original date
-                                var draw = function(contents, trigger, showPopup) {
-                                    contents.empty()
-                                    contents.append(AJS.format('{0}: {1}', reply.label, serverTime))
-                                    showPopup()
-                                }
+                                    // add a pop-up with the original date
+                                    var draw = function(contents, trigger, showPopup) {
+                                        contents.empty()
+                                        contents.append(AJS.format('{0}: {1}', reply.label, serverTime))
+                                        showPopup()
+                                    }
 
-                                var options = { onHover: true, showDelay: 400, hideDelay: 400, closeOthers: false, width: 200 }
-                                AJS.InlineDialog($date, "jira-myzone-" + popupSequence++, draw, options)
-                            })
-                        }
-                    })
-                }
-            });
+                                    var options = { onHover: true, showDelay: 400, hideDelay: 400, closeOthers: false, width: 200 }
+                                    AJS.InlineDialog($date, "jira-myzone-" + popupSequence++, draw, options)
+                                })
+                            }
+                        })
+                    }
+                });
+            }
         }
     }
 

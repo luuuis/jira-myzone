@@ -42,7 +42,7 @@ class ResponseDTO
     public ResponseDTO(String label, Map<String, String> times)
     {
         this.label = label;
-        this.times = new HashMap<String, String>(times);
+        this.times = times != null ? new HashMap<String, String>(times) : new HashMap<String, String>();
     }
 
     @Override
