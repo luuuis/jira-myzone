@@ -123,7 +123,7 @@ public class TZConverter
             {
                 ParsedDate dateInJiraTZ = parse(serverTime, userLocale);
                 String dateInUserTZ = format(dateInJiraTZ, userTZ, userLocale);
-                String displayDate = String.format("%s %s", dateInUserTZ, userTZ.getDisplayName(true, SHORT));
+                String displayDate = String.format("%s %s", dateInUserTZ, userTZ.getDisplayName(userTZ.inDaylightTime(dateInJiraTZ.date), SHORT));
 
                 // return date strings w/ TZ info
                 times.put(serverTime, displayDate);
