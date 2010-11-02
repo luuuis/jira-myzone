@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.github.luuuis</groupId>
@@ -17,7 +18,7 @@
         <developerConnection>scm:git:git://github.com/luuuis/jira-myzone.git</developerConnection>
         <url>http://github.com/luuuis/jira-myzone.git</url>
     </scm>
-    
+
     <name>jira-myzone</name>
     <description>This plugin shifts times in JIRA to your local timezone.</description>
     <packaging>atlassian-plugin</packaging>
@@ -112,6 +113,36 @@
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <id>minify-resources</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+                <property>
+                    <name>!minify.skip</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>net.sf.alchim</groupId>
+                        <artifactId>yuicompressor-maven-plugin</artifactId>
+                        <version>0.7.1</version>
+                        <executions>
+                            <execution>
+                                <id>compress-js</id>
+                                <phase>prepare-package</phase>
+                                <goals>
+                                    <goal>compress</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
