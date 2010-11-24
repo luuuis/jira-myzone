@@ -38,5 +38,6 @@
     <resource type="i18n" name="strings" location="com/github/luuuis/myzone/strings" />
 
     <component key="buildConstants" class="com.github.luuuis.myzone.BuildConstants" />
+    <component key="dateFactory" class="com.github.luuuis.myzone.resource.DefaultDateFactory" />
 
 </atlassian-plugin>

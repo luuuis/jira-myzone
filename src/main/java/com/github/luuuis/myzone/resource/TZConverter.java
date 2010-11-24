@@ -32,27 +32,16 @@ import org.joda.time.Days;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import java.text.MessageFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
-import java.util.TimeZone;
+import java.util.*;
 
 import static java.util.Calendar.*;
 import static java.util.TimeZone.SHORT;
-import static java.util.TimeZone.getDefault;
-import static java.util.TimeZone.getTimeZone;
+import static java.util.TimeZone.*;
 import static org.apache.commons.lang.StringUtils.isEmpty;
 
 /**
@@ -84,17 +73,24 @@ public class TZConverter
     private final I18nBean.BeanFactory i18nFactory;
 
     /**
+     * The DateFactory.
+     */
+    private final DateFactory dateFactory;
+
+    /**
      * Creates a new TZConverter.
      *
      * @param applicationProperties an ApplicationProperties
      * @param authContext a JiraAuthenticationContext
      * @param i18nFactory an I18nBean factory
+     * @param dateFactory a DateFactory
      */
-    public TZConverter(ApplicationProperties applicationProperties, JiraAuthenticationContext authContext, I18nHelper.BeanFactory i18nFactory)
+    public TZConverter(ApplicationProperties applicationProperties, JiraAuthenticationContext authContext, I18nHelper.BeanFactory i18nFactory, DateFactory dateFactory)
     {
         this.applicationProperties = applicationProperties;
         this.authContext = authContext;
         this.i18nFactory = i18nFactory;
+        this.dateFactory = dateFactory;
     }
 
     @POST
@@ -145,7 +141,7 @@ public class TZConverter
      * @return a String that contains a JSON
      * @throws com.atlassian.jira.util.json.JSONException if there's a problem serialising
      */
-    private String asJSON(Map<String, String> dates) throws JSONException
+    protected String asJSON(Map<String, String> dates) throws JSONException
     {
         I18nHelper i18n = i18nFactory.getInstance(authContext.getLocale());
         ResponseDTO dto = new ResponseDTO(i18n.getText("myzone.popup.label"), dates);
@@ -163,12 +159,12 @@ public class TZConverter
         return json.toString();
     }
 
-    private String format(ParsedDate parsedDate, TimeZone userTZ, Locale locale)
+    protected String format(ParsedDate parsedDate, TimeZone userTZ, Locale locale)
     {
         if (applicationProperties.getOption(APKeys.JIRA_LF_DATE_RELATIVE) && parsedDate.isRelative)
         {
-            DateTime dateTime = new DateTime(parsedDate.date, DateTimeZone.forTimeZone(userTZ));
-            DateTime nowInUserTZ = new DateTime(DateTimeZone.forTimeZone(userTZ));
+            DateTime dateTime = dateFactory.newDate(parsedDate.date, DateTimeZone.forTimeZone(userTZ));
+            DateTime nowInUserTZ = dateFactory.newDate(DateTimeZone.forTimeZone(userTZ));
 
             int days = Days.daysBetween(dateTime, nowInUserTZ).getDays();
 
@@ -203,7 +199,7 @@ public class TZConverter
         return createDateFormat(getCompleteDateFormatString(), userTZ, locale).format(parsedDate.date);
     }
 
-    private ParsedDate parse(String timeString, Locale locale) throws ParseException
+    protected ParsedDate parse(String timeString, Locale locale) throws ParseException
     {
         TimeZone serverTZ = getDefault();
 
