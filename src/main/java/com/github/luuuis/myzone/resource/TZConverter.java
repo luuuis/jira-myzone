@@ -29,19 +29,31 @@ import com.opensymphony.user.User;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.Days;
+import org.joda.time.IllegalFieldValueException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.*;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import java.text.MessageFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
+import java.util.TimeZone;
 
 import static java.util.Calendar.*;
 import static java.util.TimeZone.SHORT;
-import static java.util.TimeZone.*;
+import static java.util.TimeZone.getDefault;
+import static java.util.TimeZone.getTimeZone;
 import static org.apache.commons.lang.StringUtils.isEmpty;
 
 /**
@@ -163,10 +175,8 @@ public class TZConverter
     {
         if (applicationProperties.getOption(APKeys.JIRA_LF_DATE_RELATIVE) && parsedDate.isRelative)
         {
-            DateTime dateTime = dateFactory.newDate(parsedDate.date, DateTimeZone.forTimeZone(userTZ));
-            DateTime nowInUserTZ = dateFactory.newDate(DateTimeZone.forTimeZone(userTZ));
-
-            int days = Days.daysBetween(dateTime, nowInUserTZ).getDays();
+            DateTime dateTime = new DateTime(parsedDate.date, DateTimeZone.forTimeZone(userTZ));
+            int days = daysAgo(dateTime, DateTimeZone.forTimeZone(userTZ));
 
             // today
             if (days < 1)
@@ -186,7 +196,7 @@ public class TZConverter
                 return new MessageFormat(yesterdayFmt).format(new Object[] { dateFormat.format(dateTime.toDate()) });
             }
 
-            // last week
+            // in last week
             if (days < 7)
             {
                 SimpleDateFormat dateFormat = createDateFormat(getDayFormatString(), userTZ, locale);
@@ -197,6 +207,34 @@ public class TZConverter
 
         // complete format
         return createDateFormat(getCompleteDateFormatString(), userTZ, locale).format(parsedDate.date);
+    }
+
+    /**
+     * Returns the number of days ago that the given instant took place (0 means today) in the given time zone.
+     *
+     * @param instant a DateTime
+     * @param timeZone a TimeZone
+     * @return an int indicating the number of days ago that the given instant took place
+     */
+    protected int daysAgo(DateTime instant, DateTimeZone timeZone)
+    {
+        DateTime now = dateFactory.newDate(timeZone);
+        DateTime firstInstantTomorrow;
+        try {
+            firstInstantTomorrow = now.plusDays(1)
+                    .hourOfDay().setCopy(0)
+                    .minuteOfDay().setCopy(0)
+                    .secondOfDay().setCopy(0)
+                    .millisOfDay().setCopy(0);
+        }
+        catch (IllegalFieldValueException e)
+        {
+            // uh oh! we've just hit a DST gap... use the first instant after the gap
+            long transition = timeZone.nextTransition(now.getMillis());
+            firstInstantTomorrow = new DateTime(transition, timeZone).plusMillis(1);
+        }
+
+        return Days.daysBetween(instant, firstInstantTomorrow).getDays();
     }
 
     protected ParsedDate parse(String timeString, Locale locale) throws ParseException
